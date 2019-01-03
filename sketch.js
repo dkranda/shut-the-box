@@ -9,13 +9,14 @@ var diceRoll = [];        // array of current dice roll
 var dice = [];            // array of dice objects for current roll
 var availablePlays = [];  // array of plays available based on the current roll
                           // and state of the game
+var numTiles = 12;        // number of tiles in this game
 
 // initial setup
 function setup() {
   wt = Math.min(windowWidth,windowHeight);
   ht = wt;
   createCanvas(wt, ht);
-  game = new Game(12, 2, 2)
+  game = new Game(numTiles, 2, 2)
 }
 
 // update canvas size appropriately
@@ -33,6 +34,7 @@ function draw() {
   drawGame();
   drawScore();
   drawDiceButton();
+  drawGameModeButton();
   drawDice();
   checkGame();
 }
@@ -200,6 +202,50 @@ function diceButtonSelected() {
     (status == 0));
 }
 
+// draws the game mode button in the middle bottom of the board
+function drawGameModeButton(){
+  fill(210, 210, 210);
+  if (gameModeButtonSelected()) {
+    fill(230, 230, 230);
+  }
+
+  rect(wt * 0.40, ht * 0.90, wt * 0.20, ht * 0.09);
+
+  var gameModeString;
+  switch (numTiles) {
+    case 12:
+      gameModeString = "9 Tile"
+      break;
+    default:
+      gameModeString = "12 Tile"
+  }
+  textAlign(CENTER);
+  fill(0, 0, 0);
+  textSize(wt * 0.04);
+  text("Switch to", wt * 0.50, ht * 0.94);
+  text(gameModeString, wt * 0.50, ht * 0.98);
+}
+
+// determine if the game mode button is selected
+function gameModeButtonSelected() {
+  return ((mouseX >= (wt * 0.40) && mouseX <= (wt * 0.60)) &&
+    (mouseY >= (ht * 0.90) && mouseY <= (ht * 0.99)));
+}
+
+// switches game mode from 9 to 12 and vice versa
+// will restart the game
+function switchGameMode()
+{
+  switch (numTiles) {
+    case 12:
+      numTiles = 9;
+      break;
+    default:
+      numTiles = 12;
+  }
+  restartGame();
+}
+
 // if the device is shaken and the game allows it, roll the dice
 function deviceShaken(){
   if (status == 0) {
@@ -211,6 +257,8 @@ function deviceShaken(){
 function mousePressed() {
   if (diceButtonSelected()) {
     rollDice();
+  } else if (gameModeButtonSelected()) {
+    switchGameMode();
   } else if (status == 1) {
     playMove();
   } else if (status == 2) {
@@ -225,7 +273,7 @@ function restartGame()
   diceRoll = [];
   dice = [];
   availablePlays = [];
-  game = new Game(12,2,2);
+  game = new Game(numTiles,2,2);
 }
 
 // plays the given move

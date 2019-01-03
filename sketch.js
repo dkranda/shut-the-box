@@ -1,5 +1,5 @@
-var wt = 500;             // width of the canvas
-var ht = 500;             // height of the canvas
+var wt;                   // width of the canvas
+var ht;                   // height of the canvas
 var game;                 // game to track during play
 var status = 0;           // status of the game:
                           // 0 - ready to roll
@@ -12,8 +12,18 @@ var availablePlays = [];  // array of plays available based on the current roll
 
 // initial setup
 function setup() {
+  wt = Math.min(windowWidth,windowHeight);
+  ht = wt;
   createCanvas(wt, ht);
   game = new Game(12, 2, 2)
+}
+
+// update canvas size appropriately
+function windowResized()
+{
+  wt = Math.min(windowWidth,windowHeight);
+  ht = wt;
+  resizeCanvas(wt,ht);
 }
 
 // drawing calls - called in a loop
@@ -37,7 +47,7 @@ function drawGame() {
 // draw the score (bottom right of canvas)
 function drawScore()
 {
-  textSize(20);
+  textSize(wt * 0.03);
   fill(255,255,255);
   text("Score: " + game.getScore(),wt * 0.90, ht * 0.98);
 }
@@ -58,7 +68,7 @@ function checkGame()
 function drawLoss()
 {
   textAlign(CENTER);
-  textSize(50);
+  textSize(wt * 0.10);
   strokeWeight(6);
   fill(200,0,0);
   text("Sorry, you lose!",wt / 2, ht /2);
@@ -69,7 +79,7 @@ function drawLoss()
 function drawWin()
 {
   textAlign(CENTER);
-  textSize(50);
+  textSize(wt * 0.10);
   strokeWeight(6);
   fill(0,200,0);
   text("YOU WIN!",wt / 2, ht /2);
@@ -102,7 +112,7 @@ function drawTile(index, tile) {
   if (!tile.isDown) {
     textAlign(CENTER);
     fill(0, 0, 0);
-    textSize(30);
+    textSize(wt * 0.05);
     text(tile.tileNumber, xpos + (w / 2), ypos + (h / 2));
   }
 }
@@ -178,7 +188,7 @@ function drawDiceButton() {
 
   textAlign(CENTER);
   fill(0, 0, 0);
-  textSize(20);
+  textSize(wt * 0.04);
   text("Roll", wt * 0.08, ht * 0.94);
   text("Dice", wt * 0.08, ht * 0.98);
 }

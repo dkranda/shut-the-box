@@ -1,16 +1,22 @@
-var wt = 500;
-var ht = 500;
-var game;
-var status = 0;
-var diceRoll = [];
-var dice = [];
-var availablePlays = [];
+var wt = 500;             // width of the canvas
+var ht = 500;             // height of the canvas
+var game;                 // game to track during play
+var status = 0;           // status of the game:
+                          // 0 - ready to roll
+                          // 1 - ready to pick
+                          // 2 - game end
+var diceRoll = [];        // array of current dice roll
+var dice = [];            // array of dice objects for current roll
+var availablePlays = [];  // array of plays available based on the current roll
+                          // and state of the game
 
+// initial setup
 function setup() {
   createCanvas(wt, ht);
   game = new Game(12, 2, 2)
 }
 
+// drawing calls - called in a loop
 function draw() {
   clear();
   background(51);
@@ -21,12 +27,14 @@ function draw() {
   checkGame();
 }
 
+// draw the tiles across the top third of the canvas
 function drawGame() {
   for (var i = 0; i < game.tiles.length; i++) {
     this.drawTile(i, game.tiles[i]);
   }
 }
 
+// draw the score (bottom right of canvas)
 function drawScore()
 {
   textSize(20);
@@ -34,6 +42,7 @@ function drawScore()
   text("Score: " + game.getScore(),wt * 0.90, ht * 0.98);
 }
 
+// check whether the game is a win or a loss
 function checkGame()
 {
   if (game.isWin()) {
@@ -45,6 +54,7 @@ function checkGame()
   }
 }
 
+// draw losing game splash
 function drawLoss()
 {
   textAlign(CENTER);
@@ -55,6 +65,7 @@ function drawLoss()
   strokeWeight(1);
 }
 
+// draw winning game splash
 function drawWin()
 {
   textAlign(CENTER);
@@ -65,6 +76,7 @@ function drawWin()
   strokeWeight(1);
 }
 
+// draws the given tile at the given index
 function drawTile(index, tile) {
   var offset = Math.floor((wt / game.tiles.length) * 0.10);
   var xpos = Math.floor(wt / game.tiles.length) * index + offset;
@@ -72,11 +84,13 @@ function drawTile(index, tile) {
   var w = Math.floor((wt / game.tiles.length) * 0.95);
   var h = -(Math.floor(ht / 3));
 
+  // draw a squatty tile if it has been dropped
   if (tile.isDown) {
     ypos = 0;
     h = Math.floor(ht / 10);
   }
 
+  // change tile color if it can be played and the mouse is on top of it
   fill(139, 69, 19);
   if (tileIsSelected(tile)) {
     fill(180, 90, 24);
@@ -84,6 +98,7 @@ function drawTile(index, tile) {
 
   rect(xpos, ypos, w, h);
 
+  // if the tile hasn't been dropped, draw its value
   if (!tile.isDown) {
     textAlign(CENTER);
     fill(0, 0, 0);
@@ -92,6 +107,10 @@ function drawTile(index, tile) {
   }
 }
 
+// returns whether the tile is selected
+// tiles aren't selected if they are dropped
+// tiles aren't selected unless the state of the game allows it
+// tiles aren't selected unless they are part of a valid play
 function tileIsSelected(tile) {
   if (tile.isDown) {
     return false;
@@ -111,6 +130,7 @@ function tileIsSelected(tile) {
   }
 }
 
+// given a tile number, determine if it is part of an available play
 function tileIsInAvailablePlay(tileNumber) {
   for (var i = 0; i < availablePlays.length; i++) {
     for (var j = 0; j < availablePlays[i].length; j++) {
@@ -122,6 +142,7 @@ function tileIsInAvailablePlay(tileNumber) {
   return false;
 }
 
+// retrieve the available play for a given tile
 function getAvailablePlayForTile(tileNumber) {
   for (var i = 0; i < availablePlays.length; i++) {
     for (var j = 0; j < availablePlays[i].length; j++) {
@@ -133,6 +154,7 @@ function getAvailablePlayForTile(tileNumber) {
   return [];
 }
 
+// determine if the mouse is on the given tilenumber
 function mouseIsOnTile(tileNumber) {
   var index = tileNumber - 1;
 
@@ -146,7 +168,7 @@ function mouseIsOnTile(tileNumber) {
     ((mouseY <= ypos) && (mouseY >= ypos + h));
 }
 
-
+// draws the roll dice button in the bottom right of the canvas
 function drawDiceButton() {
   fill(210, 210, 210);
   if (diceButtonSelected()) {
@@ -161,13 +183,22 @@ function drawDiceButton() {
   text("Dice", wt * 0.08, ht * 0.98);
 }
 
+// determines if the roll dice button is selected
 function diceButtonSelected() {
   return ((mouseX >= (wt * 0.01) && mouseX <= (wt * 0.15)) &&
     (mouseY >= (ht * 0.90) && mouseY <= (ht * 0.99)) &&
     (status == 0));
 }
 
-function mouseClicked() {
+// if the device is shaken and the game allows it, roll the dice
+function deviceShaken(){
+  if (status == 0) {
+    rollDice();
+  }
+}
+
+// handle mouse presses to roll dice, play a move, or restart the game
+function mousePressed() {
   if (diceButtonSelected()) {
     rollDice();
   } else if (status == 1) {
@@ -177,6 +208,7 @@ function mouseClicked() {
   }
 }
 
+// restarts the game
 function restartGame()
 {
   status = 0;
@@ -186,6 +218,7 @@ function restartGame()
   game = new Game(12,2,2);
 }
 
+// plays the given move
 function playMove() {
   var movePlayed = false;
   for (var i = 0; i < game.tiles.length; i++) {
@@ -199,6 +232,7 @@ function playMove() {
   }
 }
 
+// rolls dice
 function rollDice() {
   status = 1;
   diceRoll = game.getDiceRoll();
@@ -206,6 +240,7 @@ function rollDice() {
   availablePlays = game.getAvailablePlays(diceRoll);
 }
 
+// initiates dice objects for drawing later
 function initiateDice() {
   dice = [];
   for (var i = 0; i < diceRoll.length; i++) {
@@ -213,20 +248,23 @@ function initiateDice() {
   }
 }
 
+// draw the current dice objects
 function drawDice() {
   for (var i = 0; i < dice.length; i++) {
     drawOneDie(dice[i]);
   }
 }
 
+// draw the given die object
 function drawOneDie(die) {
   fill(255, 255, 255);
   rectMode(CENTER);
-  rect(die.xpos, die.ypos, die.w, die.w);
+  rect(die.xpos, die.ypos, die.w, die.w, die.r);
   drawDieFace(die);
   rectMode(CORNER);
 }
 
+// draws the die face of the given die object
 function drawDieFace(die) {
   fill(0, 0, 0);
   var r = wt * 0.012;
